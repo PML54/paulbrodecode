@@ -3,7 +3,7 @@
 // specfra, specpml, prixcalc, descriptif ) value
 
 class Cartonton {
-  int cleObjet = 0;
+  int cleObjet =0;
   String statusObjet = "";
   int cartonNo = 0;
   int imageNo = 0;
@@ -19,9 +19,6 @@ class Cartonton {
       { required this.cleObjet, required this.statusObjet, required this.cartonNo, required this.imageNo, required this.categorie,
         required this.titre, required this.prix, required this.specFra, required this.specPml,required this.prixCalc,
         required this.descriptif});
-
-  //(cleobjet, statobj, carton, photo, categorie, titre, prix, specfra, specpml, prixcalc, descriptif ) value
-
   factory Cartonton.fromJson(Map<String, dynamic> json) {
     return Cartonton(
       cleObjet: int.parse(json['cleobjet']),

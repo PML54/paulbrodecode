@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:bricethon/fototon.dart';
 import 'package:bricethon/database/briceclass.dart';
-void main() {
 
+void main() {
   runApp(const MyApp());
 }
 
@@ -23,7 +22,6 @@ the first is of name key with type Key */
   It's also used to annotate the implementation of an abstract method. '
   'It is optional to use but recommended as it improves readability. */
   @override
-
   Widget build(BuildContext context) {
     /*A BuildContext is nothing else but a reference to the location of a Widget
     within the tree structure of all the Widgets which are built.*/
@@ -41,7 +39,7 @@ the first is of name key with type Key */
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Cartons pour Saint Brice'),
+      home: const MyHomePage(title: 'Cartons pour Saint Brice  1.1 '),
     );
   }
 }
@@ -65,79 +63,151 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  String mafoto = "assets/1.jpeg";
+  // Debug sur Plateforme
+  String debug1 = "Debug1";
+  String debug2 = "1";
+  String debug3 = "1";
 
   // Réglages de l'image
+  String mafoto = "assets/1.jpeg";
   double thiswidth = 1000;
   double thisheight = 1000;
+  int prixClosed = 1;
+  String prixDisplayed = "";
 
-  void _changeText() {
+//
+  List<Cartonton> listObjets = [];
+  int nbTotalObjets = 0;
+
+  //
+  List<int> mesCartons = [];
+  int nbCartons = 15; // Nb Cartons
+  int quelCarton = 1;
+  int ordreCarton = 0;
+
+//
+  List<Cartonton> listObjetsCarton = []; // reduce
+  int counterObjets = 0;
+  int objetsInCarton = 1;
+  int valeurCarton = 0;
+
+  //+++++++++++++++++++++
+  void selectUnCarton() {
+    // C'est le carton Actif --> quelCarton
+    // On peut le passerf en argument
+    listObjetsCarton.clear();
+    valeurCarton = 0;
+    for (Cartonton _thisObjet in listObjets) {
+      if (_thisObjet.cartonNo == quelCarton) {
+        listObjetsCarton.add(_thisObjet);
+        valeurCarton = valeurCarton + _thisObjet.prix;
+      }
+    }
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-      int kifile = _counter % 2 + 1;
-      mafoto = imgList[kifile];
-      mafoto = 'assets/' + kifile.toString() + '.jpeg';
+      listObjetsCarton.sort((a, b) => a.imageNo.compareTo(b.imageNo));
+      objetsInCarton = listObjetsCarton.length;
+      counterObjets = 0;
+      mafoto = 'briceton/' +
+          quelCarton.toString() +
+          '/' +
+          (counterObjets + 1).toString() +
+          '.jpeg';
     });
   }
-void readMysql()    {
-    // ON l'appelle au démarrage de l'appli
 
+  //+++++++++++++++++++++
+  void _fake() {}
 
+  //+++++++++++++++++++++
+  void _cartonApres() {
+    setState(() {
+      ordreCarton++;
+      if (ordreCarton >= mesCartons.length) {
+        ordreCarton = 0;
+      }
+      quelCarton = mesCartons[ordreCarton];
 
-}
+      selectUnCarton();
+    });
+  }
 
-  List<Cartonton> listCarton  = [];
-  int nbRecords=0;
+  //+++++++++++++++++++++
+  void _cartonAvant() {
+    setState(() {
+      ordreCarton--;
+      if (ordreCarton < 0) {
+        ordreCarton = 0;
+      }
+      quelCarton = mesCartons[ordreCarton];
+      selectUnCarton();
+    });
+  }
 
+  //+++++++++++++++++++++
   Future getData() async {
-    Uri url= Uri.parse("http://www.paulbrode.com/db.php");
-    //Uri url = Uri.parse("http://francinebrode.com/db.php");
-    int bb=1;
+    Uri url = Uri.parse("http://www.paulbrode.com/db.php");
     http.Response response = await http.get(url);
-    var datamysql = jsonDecode(response.body) as List;
-    setState(() {
-      listCarton = datamysql.map((xJson) => Cartonton.fromJson(xJson)).toList();
-    });
-
-    print(datamysql.toString());
-    print(" Combien = " +listCarton.length.toString());
-  }
-    void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-      int kifile = _counter % 32 + 1;
-      mafoto = imgList[kifile];
-
-      mafoto = 'briceton/94/' + kifile.toString() + '.jpeg';
-    });
+    if (response.statusCode == 200) {
+      var datamysql = jsonDecode(response.body) as List;
+      setState(() {
+        debug1 = "http://www.paulbrode.com/db.php";
+        listObjets =
+            datamysql.map((xJson) => Cartonton.fromJson(xJson)).toList();
+        _getListCarton();
+        ordreCarton = 0;
+        quelCarton = mesCartons[0];
+        selectUnCarton();
+        debug2 = mesCartons.length.toString();
+      });
+    } else {
+      debug2 = " KO Http";
+    }
   }
 
+  //+++++++++++++++++++++
+  void _incrementCounter() {
+    // POur chaque sous Liste listObjetsCarton
+    //  On va  chercher l'image
+    // Pour revrnir au début utlisons le reste de la division
+    setState(() {
+      counterObjets++;
+      if (counterObjets >= objetsInCarton) counterObjets = 0;
+      mafoto = 'briceton/' +
+          quelCarton.toString() +
+          '/' +
+          (counterObjets + 1).toString() +
+          '.jpeg';
+      debug3 = (counterObjets + 1).toString() + "/" + objetsInCarton.toString();
+      prixClosed = listObjetsCarton[counterObjets].prix;
+      prixDisplayed = "?";
+    });
+  }
+
+  //+++++++++++++++++++++
+  void _getListCarton() {
+    mesCartons.clear();
+    for (Cartonton _thisObjet in listObjets) {
+      int thisCarton = _thisObjet.cartonNo;
+      int inside = 0;
+
+      for (var element in mesCartons) {
+        if (element == thisCarton) inside = 1;
+      }
+      if (inside == 0) mesCartons.add(thisCarton);
+    }
+    mesCartons.sort();
+  }
+
+  //+++++++++++++++++++++
   void initState() {
     getData();
-    nbRecords=listCarton.length;
-    print ("listCarton.length = "+ listCarton.length.toString());
-
+    nbTotalObjets = listObjets.length; // Pas used
   }
 
-
+  //+++++++++++++++++++++
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    // This method is rerun every time setState is called,
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -182,65 +252,28 @@ void readMysql()    {
                   });
                 },
               ),
-              Slider(
-                label: 'monlabel',
-                activeColor: Colors.orange,
-                divisions: 20,
-                min: 0,
-                max: 19,
-                value: 10,
-                onChanged: (double newValue) {
-                  setState(() {
-                    newValue = newValue.round() as double;
-                  });
-                },
-              ),
-              Slider(
-                label: 'monlabel',
-                activeColor: Colors.orange,
-                divisions: 20,
-                min: 0,
-                max: 19,
-                value: 10,
-                onChanged: (double newValue) {
-                  setState(() {
-                    newValue = newValue.round() as double;
-                  });
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.youtube_searched_for),
-                iconSize: 80,
-                color: Colors.deepOrange,
-                tooltip: 'brocabrac',
-                onPressed: () {
-                  var nbBrocabrac = 0;
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.map_outlined),
-                iconSize: 80,
-                color: Colors.blue,
-                tooltip: 'unused',
+              RaisedButton(
+                color: Colors.red, // background
+                textColor: Colors.white, // foreground
                 onPressed: () {},
+                child: Text(listObjetsCarton[counterObjets].titre),
+              ),
+              ElevatedButton(
+                //  child: Text(listObjetsCarton[counterObjets].prix.toString()+'€'),
+                child: Text(prixDisplayed),
+                style: ElevatedButton.styleFrom(primary: Colors.teal),
+                onPressed: () {
+                  setState(() {
+                    prixDisplayed = prixClosed.toString() + " €";
+                  });
+                },
               ),
               RaisedButton(
                 color: Colors.red, // background
                 textColor: Colors.white, // foreground
                 onPressed: () {},
-                child: Text('B1'),
+                child: Text(debug3),
               ),
-              RaisedButton(
-                child: Text(
-                  "Click Here",
-                  style: TextStyle(fontSize: 20),
-                ),
-                onPressed: _changeText,
-                color: Colors.red,
-                textColor: Colors.white,
-                padding: EdgeInsets.all(8.0),
-                splashColor: Colors.grey,
-              )
             ],
           ),
         ],
@@ -250,29 +283,34 @@ void readMysql()    {
           //crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.youtube_searched_for),
-              iconSize: 80,
-              color: Colors.deepOrange,
-              tooltip: 'brocabrac',
-              onPressed: () {
-                var nbBrocabrac = 0;
-              },
+            FloatingActionButton(
+              onPressed: _cartonAvant,
+              tooltip: 'Au Précédent',
+              child: const Icon(Icons.arrow_back),
             ),
-            IconButton(
-              icon: const Icon(Icons.map_outlined),
-              iconSize: 80,
-              color: Colors.blue,
-              tooltip: 'unused',
-              onPressed: () {},
+            Text(
+              "   B" +
+                  quelCarton.toString() +
+                  ' = ' +
+                  valeurCarton.toString() +
+                  ' €   ',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,fontSize: 20,
+                  backgroundColor: Colors.blue,
+                  color: Colors.white),
+            ),
+            FloatingActionButton(
+              onPressed: _cartonApres,
+              tooltip: 'Au Suivant',
+              child: const Icon(Icons.arrow_forward),
             ),
           ]),
-      floatingActionButton: Container(
-        child: FloatingActionButton(
-          onPressed: _incrementCounter,
-          tooltip: 'Increment',
-          child: const Icon(Icons.add),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
