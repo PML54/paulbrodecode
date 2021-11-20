@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:bricethon/database/briceclass.dart';
+import 'package:cartono/briceclass.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,33 +28,15 @@ the first is of name key with type Key */
     return MaterialApp(
       title: 'Saint-Brice',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Cartons pour Saint Brice  1.1 '),
+      home: const MyHomePage(title: 'Saint Brice  2.03 '),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -64,9 +46,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   // Debug sur Plateforme
-  String debug1 = "Debug1";
-  String debug2 = "1";
-  String debug3 = "1";
 
   // Réglages de l'image
   String mafoto = "assets/1.jpeg";
@@ -74,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double thisheight = 1000;
   int prixClosed = 1;
   String prixDisplayed = "";
+  String debug = "";
 
 //
   List<Cartonton> listObjets = [];
@@ -94,7 +74,6 @@ class _MyHomePageState extends State<MyHomePage> {
   //+++++++++++++++++++++
   void selectUnCarton() {
     // C'est le carton Actif --> quelCarton
-    // On peut le passerf en argument
     listObjetsCarton.clear();
     valeurCarton = 0;
     for (Cartonton _thisObjet in listObjets) {
@@ -113,11 +92,37 @@ class _MyHomePageState extends State<MyHomePage> {
           '/' +
           (counterObjets + 1).toString() +
           '.jpeg';
+      prixClosed = listObjetsCarton[counterObjets].prix;
+      prixDisplayed = prixClosed.toString() + " €";
     });
   }
 
   //+++++++++++++++++++++
   void _fake() {}
+
+  //+++++++++++++++++++++
+
+
+  //+++++++++++++++++++++
+  void _moinsPrix() {
+    int neoPrix = (listObjetsCarton[counterObjets].prix) - 1;
+    if (neoPrix < 1) neoPrix = 1;
+    listObjetsCarton[counterObjets].prix = neoPrix;
+    setState(() {
+      prixClosed = listObjetsCarton[counterObjets].prix;
+      prixDisplayed = prixClosed.toString() + " €";
+    });
+  }
+
+  //+++++++++++++++++++++
+  void _plusPrix() {
+      int neoPrix = listObjetsCarton[counterObjets].prix + 1;
+    listObjetsCarton[counterObjets].prix = neoPrix;
+    setState(() {
+      prixClosed = listObjetsCarton[counterObjets].prix;
+      prixDisplayed = prixClosed.toString() + " €";
+    });
+  }
 
   //+++++++++++++++++++++
   void _cartonApres() {
@@ -129,6 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
       quelCarton = mesCartons[ordreCarton];
 
       selectUnCarton();
+      prixDisplayed = "?";
     });
   }
 
@@ -141,7 +147,17 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       quelCarton = mesCartons[ordreCarton];
       selectUnCarton();
+      prixDisplayed = "?";
     });
+  }
+
+  //***********
+  void updateData() async {
+    Uri url = Uri.parse("http://www.paulbrode.com/dbu.php");
+    var id = listObjetsCarton[counterObjets].cleObjet.toString();
+    var prix = listObjetsCarton[counterObjets].prix.toString();
+    var data = {"cleobjet": id, "prix": prix};
+    var res = await http.post(url, body: data);
   }
 
   //+++++++++++++++++++++
@@ -151,18 +167,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (response.statusCode == 200) {
       var datamysql = jsonDecode(response.body) as List;
       setState(() {
-        debug1 = "http://www.paulbrode.com/db.php";
         listObjets =
             datamysql.map((xJson) => Cartonton.fromJson(xJson)).toList();
         _getListCarton();
         ordreCarton = 0;
         quelCarton = mesCartons[0];
         selectUnCarton();
-        debug2 = mesCartons.length.toString();
       });
-    } else {
-      debug2 = " KO Http";
-    }
+    } else {}
   }
 
   //+++++++++++++++++++++
@@ -178,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
           '/' +
           (counterObjets + 1).toString() +
           '.jpeg';
-      debug3 = (counterObjets + 1).toString() + "/" + objetsInCarton.toString();
+
       prixClosed = listObjetsCarton[counterObjets].prix;
       prixDisplayed = "?";
     });
@@ -187,7 +199,11 @@ class _MyHomePageState extends State<MyHomePage> {
   //+++++++++++++++++++++
   void _getListCarton() {
     mesCartons.clear();
+    int i = 0;
+
     for (Cartonton _thisObjet in listObjets) {
+      _thisObjet.kikey = i++;
+
       int thisCarton = _thisObjet.cartonNo;
       int inside = 0;
 
@@ -258,21 +274,50 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {},
                 child: Text(listObjetsCarton[counterObjets].titre),
               ),
-              ElevatedButton(
-                //  child: Text(listObjetsCarton[counterObjets].prix.toString()+'€'),
-                child: Text(prixDisplayed),
-                style: ElevatedButton.styleFrom(primary: Colors.teal),
-                onPressed: () {
-                  setState(() {
-                    prixDisplayed = prixClosed.toString() + " €";
-                  });
-                },
+              Row(
+                children: [
+                  FloatingActionButton(
+                    onPressed: _moinsPrix,
+                    tooltip: 'Au Suivant',
+                    child: const Icon(Icons.exposure_neg_1),
+                  ),
+                  ElevatedButton(
+                    child: Text(prixDisplayed),
+                    style: ElevatedButton.styleFrom(primary: Colors.teal),
+                    onPressed: () {
+                      setState(() {
+                        prixClosed = listObjetsCarton[counterObjets].prix;
+                        prixDisplayed = prixClosed.toString() + " €";
+                      });
+                    },
+                  ),
+                  FloatingActionButton(
+                    onPressed: _plusPrix,
+                    tooltip: 'Au Suivant',
+                    child: const Icon(Icons.exposure_plus_1),
+                  ),
+                  FloatingActionButton(
+                    onPressed: updateData,
+                    tooltip: 'Save',
+                    child: const Icon(Icons.save),
+                  ),
+                ],
               ),
-              RaisedButton(
-                color: Colors.red, // background
-                textColor: Colors.white, // foreground
-                onPressed: () {},
-                child: Text(debug3),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "   Objet N° " +
+                      (counterObjets +1 ).toString() +
+                      ' / ' +
+                      objetsInCarton.toString() ,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      backgroundColor: Colors.black,
+                      color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -293,11 +338,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   quelCarton.toString() +
                   ' = ' +
                   valeurCarton.toString() +
-                  ' €   ',
+                  ' €   ' ,
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                  fontWeight: FontWeight.bold,fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
                   backgroundColor: Colors.blue,
                   color: Colors.white),
             ),
