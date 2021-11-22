@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:cartono/briceclass.dart';
+import 'package:cartono/dadate.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,18 +27,17 @@ the first is of name key with type Key */
     /*A BuildContext is nothing else but a reference to the location of a Widget
     within the tree structure of all the Widgets which are built.*/
     return MaterialApp(
-      title: 'Saint-Brice',
+      title: 'St-Brice 2.3',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Saint Brice  2.03 '),
+      home: const MyHomePage(title: 'Saint Brice  2.2 '),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
   final String title;
 
   @override
@@ -45,15 +45,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Debug sur Plateforme
-
-  // Réglages de l'image
   String mafoto = "assets/1.jpeg";
-  double thiswidth = 1000;
-  double thisheight = 1000;
+  double thiswidth = 600;
+  double thisheight = 600;
   int prixClosed = 1;
   String prixDisplayed = "";
   String debug = "";
+  String dateSelected = "2021-6-6";
+  String dateSelectedPrev = "2021-6-6";
+  //"https://brocabrac.fr/recherche?ou=27,60,78,95&c=bro,vgr&d=2021-11-11"
+  //DateTime brocabracDate;
+ // final listTables = [
+  //Tables ( 1,"PML","Catalogue Peche ",1),
+
+  Tables cetteTable =  listTables [0];
 
 //
   List<Cartonton> listObjets = [];
@@ -61,12 +66,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //
   List<int> mesCartons = [];
-  int nbCartons = 15; // Nb Cartons
+
   int quelCarton = 1;
   int ordreCarton = 0;
-
+  //
+  int neoPrix=0; // Prix Calculé
+  int okSave=0; // activer si + ou +
 //
-  List<Cartonton> listObjetsCarton = []; // reduce
+ List<Cartonton> listObjetsCarton = []; // reduce
   int counterObjets = 0;
   int objetsInCarton = 1;
   int valeurCarton = 0;
@@ -76,13 +83,21 @@ class _MyHomePageState extends State<MyHomePage> {
     // C'est le carton Actif --> quelCarton
     listObjetsCarton.clear();
     valeurCarton = 0;
+    okSave=0;
     for (Cartonton _thisObjet in listObjets) {
       if (_thisObjet.cartonNo == quelCarton) {
+
         listObjetsCarton.add(_thisObjet);
+
         valeurCarton = valeurCarton + _thisObjet.prix;
       }
     }
+    for (Tables _thisTable in listTables) {
+      if (_thisTable.quelCarton== quelCarton) {
+        cetteTable =_thisTable;
 
+      }
+    }
     setState(() {
       listObjetsCarton.sort((a, b) => a.imageNo.compareTo(b.imageNo));
       objetsInCarton = listObjetsCarton.length;
@@ -98,28 +113,26 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //+++++++++++++++++++++
-  void _fake() {}
-
-  //+++++++++++++++++++++
-
 
   //+++++++++++++++++++++
   void _moinsPrix() {
-    int neoPrix = (listObjetsCarton[counterObjets].prix) - 1;
-    if (neoPrix < 1) neoPrix = 1;
-    listObjetsCarton[counterObjets].prix = neoPrix;
     setState(() {
-      prixClosed = listObjetsCarton[counterObjets].prix;
+      okSave=1;
+    neoPrix = (listObjetsCarton[counterObjets].prix) - 1;
+      if (neoPrix < 1) neoPrix = 1;
+     listObjetsCarton[counterObjets].prix = neoPrix;
+      prixClosed =  neoPrix;
       prixDisplayed = prixClosed.toString() + " €";
     });
   }
 
   //+++++++++++++++++++++
   void _plusPrix() {
-      int neoPrix = listObjetsCarton[counterObjets].prix + 1;
-    listObjetsCarton[counterObjets].prix = neoPrix;
     setState(() {
-      prixClosed = listObjetsCarton[counterObjets].prix;
+      okSave=1;
+       neoPrix = listObjetsCarton[counterObjets].prix + 1;
+     listObjetsCarton[counterObjets].prix = neoPrix;
+      prixClosed =  neoPrix;
       prixDisplayed = prixClosed.toString() + " €";
     });
   }
@@ -128,11 +141,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void _cartonApres() {
     setState(() {
       ordreCarton++;
+      okSave=0;
       if (ordreCarton >= mesCartons.length) {
         ordreCarton = 0;
       }
       quelCarton = mesCartons[ordreCarton];
-
       selectUnCarton();
       prixDisplayed = "?";
     });
@@ -141,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //+++++++++++++++++++++
   void _cartonAvant() {
     setState(() {
+      okSave=0;
       ordreCarton--;
       if (ordreCarton < 0) {
         ordreCarton = 0;
@@ -153,10 +167,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //***********
   void updateData() async {
+    okSave=0; // Ps 2 fois de suite
+    listObjetsCarton[counterObjets].prix = neoPrix;
     Uri url = Uri.parse("http://www.paulbrode.com/dbu.php");
     var id = listObjetsCarton[counterObjets].cleObjet.toString();
     var prix = listObjetsCarton[counterObjets].prix.toString();
-    var data = {"cleobjet": id, "prix": prix};
+    var data = {"cleobjet": id, "prix": prix,"dadate":dateSelected};
     var res = await http.post(url, body: data);
   }
 
@@ -167,6 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (response.statusCode == 200) {
       var datamysql = jsonDecode(response.body) as List;
       setState(() {
+        okSave=0;
         listObjets =
             datamysql.map((xJson) => Cartonton.fromJson(xJson)).toList();
         _getListCarton();
@@ -182,8 +199,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // POur chaque sous Liste listObjetsCarton
     //  On va  chercher l'image
     // Pour revrnir au début utlisons le reste de la division
-    setState(() {
-      counterObjets++;
+    setState(() {okSave=0;
+
+     counterObjets++;
       if (counterObjets >= objetsInCarton) counterObjets = 0;
       mafoto = 'briceton/' +
           quelCarton.toString() +
@@ -195,15 +213,31 @@ class _MyHomePageState extends State<MyHomePage> {
       prixDisplayed = "?";
     });
   }
+//+++++++++++++++++++++
+  void _decrementCounter() {
+    // POur chaque sous Liste listObjetsCarton
+    //  On va  chercher l'image
+    // Pour revrnir au début utlisons le reste de la division
+    setState(() {okSave=0;
 
+   counterObjets--;
+    if (counterObjets < 0 ) counterObjets = 0;
+    mafoto = 'briceton/' +
+        quelCarton.toString() +
+        '/' +
+        (counterObjets + 1).toString() +
+        '.jpeg';
+
+    prixClosed = listObjetsCarton[counterObjets].prix;
+    prixDisplayed = "?";
+    });
+  }
   //+++++++++++++++++++++
   void _getListCarton() {
     mesCartons.clear();
-    int i = 0;
+
 
     for (Cartonton _thisObjet in listObjets) {
-      _thisObjet.kikey = i++;
-
       int thisCarton = _thisObjet.cartonNo;
       int inside = 0;
 
@@ -216,20 +250,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //+++++++++++++++++++++
+  @override
   void initState() {
     getData();
-    nbTotalObjets = listObjets.length; // Pas used
   }
 
   //+++++++++++++++++++++
+  @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called,
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+     /* appBar: AppBar(
+       // title: Text(widget.title),
+      ),*/
       body: Row(
         children: [
           Image.network(
@@ -268,6 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 },
               ),
+
               RaisedButton(
                 color: Colors.red, // background
                 textColor: Colors.white, // foreground
@@ -278,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   FloatingActionButton(
                     onPressed: _moinsPrix,
-                    tooltip: 'Au Suivant',
+                    tooltip: '-1€',
                     child: const Icon(Icons.exposure_neg_1),
                   ),
                   ElevatedButton(
@@ -292,43 +326,97 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   FloatingActionButton(
+                    heroTag: 'plus',
                     onPressed: _plusPrix,
-                    tooltip: 'Au Suivant',
+                    tooltip: '+1€',
                     child: const Icon(Icons.exposure_plus_1),
                   ),
                   FloatingActionButton(
+                    heroTag: 'moins',
                     onPressed: updateData,
                     tooltip: 'Save',
                     child: const Icon(Icons.save),
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "   Objet N° " +
-                      (counterObjets +1 ).toString() +
-                      ' / ' +
-                      objetsInCarton.toString() ,
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      backgroundColor: Colors.black,
-                      color: Colors.white),
-                ),
+              Row(
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'decrement',
+                    onPressed:  _decrementCounter,
+                    tooltip: 'Increment',
+                    child: const Icon(Icons.arrow_back),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                          (counterObjets + 1).toString() +
+                          ' / ' +
+                          objetsInCarton.toString(),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          backgroundColor: Colors.white,
+                          color: Colors.black),
+                    ),
+                  ),
+                  FloatingActionButton(
+                    heroTag: 'increment',
+                    onPressed: _incrementCounter,
+                    tooltip: 'Increment',
+                    child: const Icon(Icons.arrow_forward),
+                  ),
+
+                ],
+              ),
+              Text(
+                cetteTable.quiGere,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    backgroundColor: Colors.red,
+                    color: Colors.black),
+              ),
+              Text(
+                " "+cetteTable.quelTitre+" ",
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    backgroundColor: Colors.white,
+                    color: Colors.black),
+              ),
+              Text(
+                "Table N°" + cetteTable.quelTable.toString(),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    backgroundColor: Colors.white10,
+                    color: Colors.black),
               ),
             ],
           ),
+
+
+
         ],
       ),
 
       bottomNavigationBar: Row(
           //crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
+
             FloatingActionButton(
+              heroTag: 'cartonavant',
               onPressed: _cartonAvant,
               tooltip: 'Au Précédent',
               child: const Icon(Icons.arrow_back),
@@ -338,7 +426,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   quelCarton.toString() +
                   ' = ' +
                   valeurCarton.toString() +
-                  ' €   ' ,
+                  ' €   ',
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -348,16 +436,67 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Colors.white),
             ),
             FloatingActionButton(
+              heroTag: 'cartonapres',
               onPressed: _cartonApres,
               tooltip: 'Au Suivant',
               child: const Icon(Icons.arrow_forward),
             ),
+            IconButton(
+              // unused
+              icon: const Icon(Icons.alarm),
+              iconSize: 40,
+              color: Colors.deepPurple,
+              tooltip: 'unused',
+              onPressed: () async {
+                String dateSelection = await (Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => (const MyDaDate()),
+                    settings: const RouteSettings(
+
+                    ),
+                  ),
+                ));
+                setState(() {
+
+                  dateSelectedPrev = dateSelected;
+                  // NEW gestion des Null en DART
+                  dateSelected = dateSelection;
+                  print ("-------------->"+dateSelected);
+                });
+                if (dateSelectedPrev != dateSelected) var dd=1;
+              },
+            ),
+            FloatingActionButton(
+              heroTag: 'decrement1',
+              onPressed:  _decrementCounter,
+              tooltip: 'decrement1',
+              child: const Icon(Icons.arrow_back),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                (counterObjets + 1).toString() +
+                    ' / ' +
+                    objetsInCarton.toString(),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    backgroundColor: Colors.white,
+                    color: Colors.black),
+              ),
+            ),
+            FloatingActionButton(
+              heroTag: 'increment1',
+              onPressed: _incrementCounter,
+              tooltip: 'Increment',
+              child: const Icon(Icons.arrow_forward),
+            ),
           ]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

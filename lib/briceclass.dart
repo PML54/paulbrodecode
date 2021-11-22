@@ -39,3 +39,38 @@ class Cartonton {
   }
 
 }
+class Tables {
+
+  int quelCarton;
+  String quiGere;
+
+  String quelTitre;
+  int quelTable;
+  Tables(
+      this.quelCarton,
+      this.quiGere,
+
+      this.quelTitre,
+      this.quelTable,
+
+     );
+}
+final listTables = [
+  Tables ( 1,"PML","Catalogue Peche ",1),
+  Tables ( 2,"PML","Dubout Celine",1),
+  Tables ( 8,"FRA","Livre école",5),
+  Tables ( 9,"FRA","Livre école",5),
+  Tables ( 11,"PF","Objets brocante",3),
+  Tables ( 14,"FRA","Sac Croco",5),
+  Tables ( 15,"PML","Fables &Malte Brun",1),
+  Tables ( 17,"PF","Plateau Livres TCR ",1),
+  Tables ( 18,"PML","Quichotte BD ",2),
+  Tables ( 21,"FRA","Verre Berger Bijoux",5),
+  Tables ( 28,"PML","Pleiade Livres anciens",2),
+  Tables ( 32,"FRA","Sacs& Torchons",4),
+  Tables ( 54,"PML","Partitions & Livres",2),
+  Tables ( 85,"PML","Cp Peche",3),
+  Tables ( 94,"PF","Livres anciens Jeunes",3),
+  Tables ( 102,"PML","Ferrari Oiseaux Verre",2),
+  Tables ( 111,"FRA","Sac  Dubout cocottes",4),
+];
