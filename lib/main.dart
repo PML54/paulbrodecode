@@ -49,6 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double thiswidth = 600;
   double thisheight = 600;
   int prixClosed = 1;
+  int caTheo=0;
   String prixDisplayed = "";
   String debug = "";
   String dateSelected = "2021-6-6";
@@ -236,12 +237,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void _getListCarton() {
     mesCartons.clear();
 
-
+caTheo=0;
     for (Cartonton _thisObjet in listObjets) {
       int thisCarton = _thisObjet.cartonNo;
       int inside = 0;
 
       for (var element in mesCartons) {
+        caTheo-caTheo+_thisObjet.prix;
         if (element == thisCarton) inside = 1;
       }
       if (inside == 0) mesCartons.add(thisCarton);
@@ -344,7 +346,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   FloatingActionButton(
                     heroTag: 'decrement',
                     onPressed:  _decrementCounter,
-                    tooltip: 'Increment',
+                    tooltip: dateSelected,
                     child: const Icon(Icons.arrow_back),
                   ),
 
@@ -426,6 +428,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   quelCarton.toString() +
                   ' = ' +
                   valeurCarton.toString() +
+                  ' €   ' + ' Total = '+caTheo.toString() +
                   ' €   ',
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
@@ -467,34 +470,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 if (dateSelectedPrev != dateSelected) var dd=1;
               },
             ),
-            FloatingActionButton(
-              heroTag: 'decrement1',
-              onPressed:  _decrementCounter,
-              tooltip: 'decrement1',
-              child: const Icon(Icons.arrow_back),
-            ),
 
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                (counterObjets + 1).toString() +
-                    ' / ' +
-                    objetsInCarton.toString(),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    backgroundColor: Colors.white,
-                    color: Colors.black),
-              ),
-            ),
-            FloatingActionButton(
-              heroTag: 'increment1',
-              onPressed: _incrementCounter,
-              tooltip: 'Increment',
-              child: const Icon(Icons.arrow_forward),
-            ),
           ]),
        // This trailing comma makes auto-formatting nicer for build methods.
     );
