@@ -73,4 +73,5 @@ final listTables = [
   Tables ( 94,"PF","Livres anciens Jeunes",3),
   Tables ( 102,"PML","Ferrari Oiseaux Verre",2),
   Tables ( 111,"FRA","Sac  Dubout cocottes",4),
+  Tables ( 6,"FRA","Ecole Perruque",5),
 ];

@@ -27,11 +27,11 @@ the first is of name key with type Key */
     /*A BuildContext is nothing else but a reference to the location of a Widget
     within the tree structure of all the Widgets which are built.*/
     return MaterialApp(
-      title: 'St-Brice 2.3',
+      title: 'St-Brice 3.02',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Saint Brice  2.2 '),
+      home: const MyHomePage(title: 'St-Brice 3.02'),
     );
   }
 }
@@ -170,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void updateData() async {
     okSave=0; // Ps 2 fois de suite
     listObjetsCarton[counterObjets].prix = neoPrix;
-    Uri url = Uri.parse("http://www.paulbrode.com/dbu.php");
+    Uri url = Uri.parse("https://www.paulbrode.com/dbu.php");
     var id = listObjetsCarton[counterObjets].cleObjet.toString();
     var prix = listObjetsCarton[counterObjets].prix.toString();
     var data = {"cleobjet": id, "prix": prix,"dadate":dateSelected};
@@ -179,7 +179,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //+++++++++++++++++++++
   Future getData() async {
-    Uri url = Uri.parse("http://www.paulbrode.com/db.php");
+    Uri url = Uri.parse("https://www.paulbrode.com/db.php");
+    var data = {"dadate":dateSelected};
+
     http.Response response = await http.get(url);
     if (response.statusCode == 200) {
       var datamysql = jsonDecode(response.body) as List;
@@ -241,9 +243,9 @@ caTheo=0;
     for (Cartonton _thisObjet in listObjets) {
       int thisCarton = _thisObjet.cartonNo;
       int inside = 0;
-
+      caTheo=caTheo+_thisObjet.prix;
       for (var element in mesCartons) {
-        caTheo-caTheo+_thisObjet.prix;
+
         if (element == thisCarton) inside = 1;
       }
       if (inside == 0) mesCartons.add(thisCarton);
